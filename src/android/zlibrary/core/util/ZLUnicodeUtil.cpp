@@ -18,17 +18,11 @@
  */
 
 #include <cctype>
-#include <cstdlib>
-#include <map>
 
 #include <AndroidUtil.h>
 #include <JniEnvelope.h>
 
-#include <ZLibrary.h>
-#include <ZLFile.h>
-#include <ZLXMLReader.h>
-
-#include "ZLUnicodeUtil.h"
+#include <ZLUnicodeUtil.h>
 
 std::string ZLUnicodeUtil::toLowerFull(const std::string &utf8String) {
 	if (utf8String.empty()) {
@@ -63,4 +57,24 @@ std::string ZLUnicodeUtil::toLowerFull(const std::string &utf8String) {
 		env->DeleteLocalRef(javaString);
 		return result;
 	}
+}
+
+std::string ZLUnicodeUtil::convertNonUtfString(const std::string &str) {
+	if (isUtf8String(str)) {
+		return str;
+	}
+
+	JNIEnv *env = AndroidUtil::getEnv();
+
+	const int len = str.length();
+	jchar *chars = new jchar[len];
+	for (int i = 0; i < len; ++i) {
+		chars[i] = (unsigned char)str[i];
+	}
+	jstring javaString = env->NewString(chars, len);
+	const std::string result = AndroidUtil::fromJavaString(env, javaString);
+	env->DeleteLocalRef(javaString);
+	delete[] chars;
+
+	return result;
 }

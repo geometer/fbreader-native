@@ -75,6 +75,8 @@ public:
 	//static std::string toUpper(const std::string &utf8String);
 
 	static void utf8Trim(std::string &utf8String);
+
+	static std::string convertNonUtfString(const std::string &str);
 };
 
 inline bool ZLUnicodeUtil::isNBSpace(Ucs4Char ch) {

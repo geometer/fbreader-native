@@ -41,4 +41,7 @@ public:
 	bool matches(const CSSSelector &selector, int index) const;
 };
 
+inline XHTMLTagInfoList::XHTMLTagInfoList() {
+}
+
 #endif /* __XHTMLTAGINFO_H__ */
