@@ -20,8 +20,6 @@
 #include <AndroidUtil.h>
 #include <JniEnvelope.h>
 #include <ZLFileImage.h>
-#include <JSONWriter.h>
-#include <JSONUtil.h>
 #include <FileEncryptionInfo.h>
 
 #include "../common/fbreader/bookmodel/BookModel.h"
@@ -182,42 +180,8 @@ JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 		return 3;
 	}
 
-	ModelWriter mWriter;
-	shared_ptr<JSONMapWriter> everythingWriter = new JSONMapWriter(cacheDir + "/MODELS");
-
-	shared_ptr<JSONArrayWriter> modelsWriter = everythingWriter->addArray("mdls");
-	mWriter.writeModel(*model->bookTextModel(), modelsWriter->addMap());
-	const std::map<std::string,shared_ptr<ZLTextModel> > &footnotes = model->footnotes();
-	std::map<std::string,shared_ptr<ZLTextModel> >::const_iterator it = footnotes.begin();
-	for (; it != footnotes.end(); ++it) {
-		mWriter.writeModel(*it->second, modelsWriter->addMap());
-	}
-
-	mWriter.writeInternalHyperlinks(*model, cacheDir, everythingWriter->addMap("hlks"));
-
-	shared_ptr<JSONArrayWriter> familiesWriter = everythingWriter->addArray("fams");
-	const std::vector<std::vector<std::string> > familyLists = model->fontManager().familyLists();
-	for (std::vector<std::vector<std::string> >::const_iterator it = familyLists.begin(); it != familyLists.end(); ++it) {
-		JSONUtil::serializeStringArray(*it, familiesWriter->addArray());
-	}
-
-	shared_ptr<JSONArrayWriter> fontsWriter = everythingWriter->addArray("fnts");
-	const std::map<std::string,shared_ptr<FontEntry> > &entries = model->fontManager().entries();
-	for (std::map<std::string,shared_ptr<FontEntry> >::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-		if (!it->second.isNull()) {
-			JSONUtil::serializeFontEntry(it->first, *it->second, fontsWriter->addMap());
-		}
-	}
-
-	shared_ptr<JSONArrayWriter> imagesWriter = everythingWriter->addArray("imgs");
-	const std::map<std::string,shared_ptr<const ZLImage> > &images = model->images();
-	for (std::map<std::string,shared_ptr<const ZLImage> >::const_iterator it = images.begin(); it != images.end(); ++it) {
-		if (!it->second.isNull()) {
-			JSONUtil::serializeImage(it->first, (const ZLFileImage&)*it->second, imagesWriter->addMap());
-		}
-	}
-
-	mWriter.writeTOC(*model->contentsTree(), new JSONMapWriter(cacheDir + "/TOC"));
+	ModelWriter writer(cacheDir);
+	writer.writeModelInfo(*model);
 
 	return 0;
 }

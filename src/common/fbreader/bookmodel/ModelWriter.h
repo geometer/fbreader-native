@@ -20,6 +20,8 @@
 #ifndef __MODELWRITER_H__
 #define __MODELWRITER_H__
 
+#include <string>
+
 #include <shared_ptr.h>
 
 class ZLTextModel;
@@ -30,9 +32,17 @@ class JSONMapWriter;
 class ModelWriter {
 
 public:
+	ModelWriter(const std::string &dir);
+
+	void writeModelInfo(const BookModel &model);
+
+private:
 	void writeModel(const ZLTextModel &model, shared_ptr<JSONMapWriter> writer);
-	void writeInternalHyperlinks(BookModel &model, const std::string &cacheDir, shared_ptr<JSONMapWriter> writer);
+	void writeInternalHyperlinks(const BookModel &model, shared_ptr<JSONMapWriter> writer);
 	void writeTOC(const ContentsTree &tree, shared_ptr<JSONMapWriter> writer);
+
+private:
+	const std::string myDir;
 };
 
 #endif /* __MODELWRITER_H__ */

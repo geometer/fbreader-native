@@ -24,6 +24,47 @@
 #include "ModelWriter.h"
 #include "../library/Book.h"
 
+ModelWriter::ModelWriter(const std::string &dir) : myDir(dir) {
+}
+
+void ModelWriter::writeModelInfo(const BookModel &model) {
+	shared_ptr<JSONMapWriter> everythingWriter = new JSONMapWriter(myDir + "/MODELS");
+
+	shared_ptr<JSONArrayWriter> modelsWriter = everythingWriter->addArray("mdls");
+	writeModel(*model.bookTextModel(), modelsWriter->addMap());
+	const std::map<std::string,shared_ptr<ZLTextModel> > &footnotes = model.footnotes();
+	std::map<std::string,shared_ptr<ZLTextModel> >::const_iterator it = footnotes.begin();
+	for (; it != footnotes.end(); ++it) {
+		writeModel(*it->second, modelsWriter->addMap());
+	}
+
+	writeInternalHyperlinks(model, everythingWriter->addMap("hlks"));
+
+	shared_ptr<JSONArrayWriter> familiesWriter = everythingWriter->addArray("fams");
+	const std::vector<std::vector<std::string> > familyLists = model.fontManager().familyLists();
+	for (std::vector<std::vector<std::string> >::const_iterator it = familyLists.begin(); it != familyLists.end(); ++it) {
+		JSONUtil::serializeStringArray(*it, familiesWriter->addArray());
+	}
+
+	shared_ptr<JSONArrayWriter> fontsWriter = everythingWriter->addArray("fnts");
+	const std::map<std::string,shared_ptr<FontEntry> > &entries = model.fontManager().entries();
+	for (std::map<std::string,shared_ptr<FontEntry> >::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+		if (!it->second.isNull()) {
+			JSONUtil::serializeFontEntry(it->first, *it->second, fontsWriter->addMap());
+		}
+	}
+
+	shared_ptr<JSONArrayWriter> imagesWriter = everythingWriter->addArray("imgs");
+	const std::map<std::string,shared_ptr<const ZLImage> > &images = model.images();
+	for (std::map<std::string,shared_ptr<const ZLImage> >::const_iterator it = images.begin(); it != images.end(); ++it) {
+		if (!it->second.isNull()) {
+			JSONUtil::serializeImage(it->first, (const ZLFileImage&)*it->second, imagesWriter->addMap());
+		}
+	}
+
+	writeTOC(*model.contentsTree(), new JSONMapWriter(myDir + "/TOC"));
+}
+
 void ModelWriter::writeModel(const ZLTextModel &model, shared_ptr<JSONMapWriter> writer) {
 	writer->addElementIfNotEmpty("id", model.id());
 	writer->addElementIfNotEmpty("lang", model.language());
@@ -38,8 +79,8 @@ void ModelWriter::writeModel(const ZLTextModel &model, shared_ptr<JSONMapWriter>
 	JSONUtil::serializeByteArray(model.paragraphKinds(), writer->addArray("pk"));
 }
 
-void ModelWriter::writeInternalHyperlinks(BookModel &model, const std::string &cacheDir, shared_ptr<JSONMapWriter> writer) {
-	ZLCachedMemoryAllocator allocator(131072, cacheDir, "nlinks");
+void ModelWriter::writeInternalHyperlinks(const BookModel &model, shared_ptr<JSONMapWriter> writer) {
+	ZLCachedMemoryAllocator allocator(131072, myDir, "nlinks");
 
 	ZLUnicodeUtil::Ucs2String ucs2id;
 	ZLUnicodeUtil::Ucs2String ucs2modelId;
