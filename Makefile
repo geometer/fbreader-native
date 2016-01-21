@@ -43,22 +43,6 @@ all:
 		fi; \
 	done;
 
-#install: all do_install
-#
-#do_install:
-#	@for dir in $(ZLIBDIRS) $(APPDIRS); do \
-#		if [ -d $$dir ]; then \
-#			cd $$dir; make $@; cd $(ROOTDIR); \
-#		fi; \
-#	done
-#
-#do_install_dev:
-#	@for dir in $(ZLIBDIRS); do \
-#		if [ -d $$dir ]; then \
-#			cd $$dir; make $@; cd $(ROOTDIR); \
-#		fi; \
-#	done
-
 clean:
 	@for dir in $(ZL_CORE_DIR_PATHS) $(ZL_CORE_DIR_PATHS_EXTRA) $(ZL_TEXT_DIR_PATHS) $(FBREADER_DIR_PATHS) $(FORMAT_DIR_PATHS); do \
 		if [ -d $$dir ]; then \
