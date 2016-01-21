@@ -78,7 +78,7 @@ void XHTMLFilesCollector::startElementHandler(const char *tag, const char **xmla
 }
 
 void XHTMLFilesCollector::endElementHandler(const char *tag) {
-	if (SPINE == ZLUnicodeUtil::toLowerAscii(tag)) {
+	if (ZLUnicodeUtil::equalsIgnoreCaseAscii(SPINE, tag)) {
 		interrupt();
 	}
 }

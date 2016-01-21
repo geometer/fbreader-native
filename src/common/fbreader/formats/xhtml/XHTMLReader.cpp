@@ -276,13 +276,13 @@ void XHTMLTagStyleAction::doAtEnd(XHTMLReader &reader) {
 void XHTMLTagLinkAction::doAtStart(XHTMLReader &reader, const char **xmlattributes) {
 	static const std::string REL = "stylesheet";
 	const char *rel = reader.attributeValue(xmlattributes, "rel");
-	if (rel == 0 || REL != ZLUnicodeUtil::toLowerAscii(rel)) {
+	if (rel == 0 || !ZLUnicodeUtil::equalsIgnoreCaseAscii(rel, REL)) {
 		return;
 	}
 
 	static const std::string TYPE = "text/css";
 	const char *type = reader.attributeValue(xmlattributes, "type");
-	if (type == 0 || TYPE != ZLUnicodeUtil::toLowerAscii(type)) {
+	if (type == 0 || !ZLUnicodeUtil::equalsIgnoreCaseAscii(type, TYPE)) {
 		return;
 	}
 
@@ -597,13 +597,13 @@ XHTMLTagAction *XHTMLReader::addAction(const std::string &ns, const std::string 
 	return old;
 }
 
-XHTMLTagAction *XHTMLReader::getAction(const std::string &sTag) {
-	XHTMLTagAction *action = ourTagActions[sTag];
+XHTMLTagAction *XHTMLReader::getAction(const std::string &lowerCasedTag) {
+	XHTMLTagAction *action = ourTagActions[lowerCasedTag];
 	if (action != 0) {
 		return action;
 	}
 	for (std::map<shared_ptr<FullNamePredicate>,XHTMLTagAction*>::const_iterator it = ourNsTagActions.begin(); it != ourNsTagActions.end(); ++it) {
-		if (it->first->accepts(*this, sTag)) {
+		if (it->first->accepts(*this, lowerCasedTag)) {
 			return it->second;
 		}
 	}

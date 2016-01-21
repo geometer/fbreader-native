@@ -263,7 +263,7 @@ void MobipocketHtmlReferenceTagAction::run(const HtmlReader::HtmlTag &tag) {
 				title = value;
 			} else if (name == "filepos") {
 				filepos = value;
-			} else if (name == "type" && ZLUnicodeUtil::toLowerAscii(value) == "toc") {
+			} else if (name == "type" && ZLUnicodeUtil::equalsIgnoreCaseAscii(value, "toc")) {
 				isTocReference = true;
 			}
 		}

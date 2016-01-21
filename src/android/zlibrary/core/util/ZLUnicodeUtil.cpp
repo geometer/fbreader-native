@@ -59,6 +59,41 @@ std::string ZLUnicodeUtil::toLowerFull(const std::string &utf8String) {
 	}
 }
 
+std::string ZLUnicodeUtil::toUpperFull(const std::string &utf8String) {
+	if (utf8String.empty()) {
+		return utf8String;
+	}
+
+	bool isAscii = true;
+	const int size = utf8String.size();
+	for (int i = size - 1; i >= 0; --i) {
+		if ((utf8String[i] & 0x80) != 0) {
+			isAscii = false;
+			break;
+		}
+	}
+	if (isAscii) {
+		std::string result(size, ' ');
+		for (int i = size - 1; i >= 0; --i) {
+			result[i] = std::toupper(utf8String[i]);
+		}
+		return result;
+	}
+	JNIEnv *env = AndroidUtil::getEnv();
+	jstring javaString = AndroidUtil::createJavaString(env, utf8String);
+	jstring upperCased = AndroidUtil::Method_java_lang_String_toUpperCase->callForJavaString(javaString);
+	if (javaString == upperCased) {
+		env->DeleteLocalRef(upperCased);
+		env->DeleteLocalRef(javaString);
+		return utf8String;
+	} else {
+		const std::string result = AndroidUtil::fromJavaString(env, upperCased);
+		env->DeleteLocalRef(upperCased);
+		env->DeleteLocalRef(javaString);
+		return result;
+	}
+}
+
 std::string ZLUnicodeUtil::convertNonUtfString(const std::string &str) {
 	if (isUtf8String(str)) {
 		return str;
