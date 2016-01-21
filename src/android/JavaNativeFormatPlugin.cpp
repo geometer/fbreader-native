@@ -25,6 +25,7 @@
 #include <FileEncryptionInfo.h>
 
 #include "../common/fbreader/bookmodel/BookModel.h"
+#include "../common/fbreader/bookmodel/ModelWriter.h"
 #include "../common/fbreader/formats/FormatPlugin.h"
 #include "../common/fbreader/library/Author.h"
 #include "../common/fbreader/library/Book.h"
@@ -163,77 +164,6 @@ JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 	fillLanguageAndEncoding(env, javaBook, *book);
 }
 
-static void writeInternalHyperlinks(BookModel &model, const std::string &cacheDir, shared_ptr<JSONMapWriter> writer) {
-	ZLCachedMemoryAllocator allocator(131072, cacheDir, "nlinks");
-
-	ZLUnicodeUtil::Ucs2String ucs2id;
-	ZLUnicodeUtil::Ucs2String ucs2modelId;
-
-	const std::map<std::string,BookModel::Label> &links = model.internalHyperlinks();
-	std::map<std::string,BookModel::Label>::const_iterator it = links.begin();
-	for (; it != links.end(); ++it) {
-		const std::string &id = it->first;
-		const BookModel::Label &label = it->second;
-		if (label.Model.isNull()) {
-			continue;
-		}
-		ZLUnicodeUtil::utf8ToUcs2(ucs2id, id);
-		ZLUnicodeUtil::utf8ToUcs2(ucs2modelId, label.Model->id());
-		const std::size_t idLen = ucs2id.size() * 2;
-		const std::size_t modelIdLen = ucs2modelId.size() * 2;
-
-		char *ptr = allocator.allocate(idLen + modelIdLen + 8);
-		ZLCachedMemoryAllocator::writeUInt16(ptr, ucs2id.size());
-		ptr += 2;
-		std::memcpy(ptr, &ucs2id.front(), idLen);
-		ptr += idLen;
-		ZLCachedMemoryAllocator::writeUInt16(ptr, ucs2modelId.size());
-		ptr += 2;
-		std::memcpy(ptr, &ucs2modelId.front(), modelIdLen);
-		ptr += modelIdLen;
-		ZLCachedMemoryAllocator::writeUInt32(ptr, label.ParagraphNumber);
-	}
-	allocator.flush();
-
-	writer->addElement("ext", allocator.fileExtension());
-	writer->addElement("blks", allocator.blocksNumber());
-}
-
-static bool ct_compare(const shared_ptr<ContentsTree> &first, const shared_ptr<ContentsTree> &second) {
-	return first->reference() < second->reference();
-}
-
-static void writeModel(const ZLTextModel &model, shared_ptr<JSONMapWriter> writer) {
-	writer->addElementIfNotEmpty("id", model.id());
-	writer->addElementIfNotEmpty("lang", model.language());
-	writer->addElement("size", model.paragraphsNumber());
-	const ZLCachedMemoryAllocator &allocator = model.allocator();
-	writer->addElement("ext", allocator.fileExtension());
-	writer->addElement("blks", allocator.blocksNumber());
-	JSONUtil::serializeIntArrayAsCounts(model.startEntryIndices(), writer->addArray("ei"));
-	JSONUtil::serializeIntArrayAsDiffs(model.startEntryOffsets(), writer->addArray("eo"));
-	JSONUtil::serializeIntArray(model.paragraphLengths(), writer->addArray("pl"));
-	JSONUtil::serializeIntArrayAsDiffs(model.textSizes(), writer->addArray("ts"));
-	JSONUtil::serializeByteArray(model.paragraphKinds(), writer->addArray("pk"));
-}
-
-static void writeTOC(const ContentsTree &tree, shared_ptr<JSONMapWriter> writer) {
-	const std::string &text = tree.text();
-	writer->addElementIfNotEmpty("t", text);
-	const int ref = tree.reference();
-	if (ref >= 0) {
-		writer->addElement("r", ref);
-	}
-	std::vector<shared_ptr<ContentsTree> > children = tree.children();
-	if (children.size() > 0) {
-		shared_ptr<JSONArrayWriter> childrenWriter = writer->addArray("c");
-		std::sort(children.begin(), children.end(), ct_compare);
-		for (std::vector<shared_ptr<ContentsTree> >::const_iterator it = children.begin(); it != children.end(); ++it) {
-			writeTOC(**it, childrenWriter->addMap());
-		}
-	}
-}
-
 extern "C"
 JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readModelNative(JNIEnv* env, jobject thiz, jobject javaBook, jstring javaCacheDir) {
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
@@ -252,17 +182,18 @@ JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 		return 3;
 	}
 
+	ModelWriter mWriter;
 	shared_ptr<JSONMapWriter> everythingWriter = new JSONMapWriter(cacheDir + "/MODELS");
 
 	shared_ptr<JSONArrayWriter> modelsWriter = everythingWriter->addArray("mdls");
-	writeModel(*model->bookTextModel(), modelsWriter->addMap());
+	mWriter.writeModel(*model->bookTextModel(), modelsWriter->addMap());
 	const std::map<std::string,shared_ptr<ZLTextModel> > &footnotes = model->footnotes();
 	std::map<std::string,shared_ptr<ZLTextModel> >::const_iterator it = footnotes.begin();
 	for (; it != footnotes.end(); ++it) {
-		writeModel(*it->second, modelsWriter->addMap());
+		mWriter.writeModel(*it->second, modelsWriter->addMap());
 	}
 
-	writeInternalHyperlinks(*model, cacheDir, everythingWriter->addMap("hlks"));
+	mWriter.writeInternalHyperlinks(*model, cacheDir, everythingWriter->addMap("hlks"));
 
 	shared_ptr<JSONArrayWriter> familiesWriter = everythingWriter->addArray("fams");
 	const std::vector<std::vector<std::string> > familyLists = model->fontManager().familyLists();
@@ -286,7 +217,7 @@ JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 		}
 	}
 
-	writeTOC(*model->contentsTree(), new JSONMapWriter(cacheDir + "/TOC"));
+	mWriter.writeTOC(*model->contentsTree(), new JSONMapWriter(cacheDir + "/TOC"));
 
 	return 0;
 }
