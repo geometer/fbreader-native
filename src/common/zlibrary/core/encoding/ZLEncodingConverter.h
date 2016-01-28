@@ -65,7 +65,10 @@ public:
 	shared_ptr<ZLEncodingConverter> converter(const std::string &name) const;
 	shared_ptr<ZLEncodingConverter> converter(int code) const;
 	shared_ptr<ZLEncodingConverter> defaultConverter() const;
+
+private:
 	void registerProvider(shared_ptr<ZLEncodingConverterProvider> provider);
+	void registerStandardProviders();
 
 private:
 	std::vector<shared_ptr<ZLEncodingConverterProvider> > myProviders;

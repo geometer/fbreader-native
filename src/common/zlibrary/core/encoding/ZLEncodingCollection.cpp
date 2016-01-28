@@ -27,7 +27,6 @@
 #include "DummyEncodingConverter.h"
 #include "Utf8EncodingConverter.h"
 #include "Utf16EncodingConverters.h"
-//#include "JavaEncodingConverter.h"
 
 ZLEncodingCollection *ZLEncodingCollection::ourInstance = 0;
 
@@ -42,11 +41,10 @@ std::string ZLEncodingCollection::encodingDescriptionPath() {
 	return ZLibrary::ZLibraryDirectory() + ZLibrary::FileNameDelimiter + "encodings";
 }
 
-ZLEncodingCollection::ZLEncodingCollection() {
+void ZLEncodingCollection::registerStandardProviders() {
 	registerProvider(new DummyEncodingConverterProvider());
 	registerProvider(new Utf8EncodingConverterProvider());
 	registerProvider(new Utf16EncodingConverterProvider());
-//	registerProvider(new JavaEncodingConverterProvider());
 }
 
 void ZLEncodingCollection::registerProvider(shared_ptr<ZLEncodingConverterProvider> provider) {
