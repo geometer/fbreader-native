@@ -35,6 +35,7 @@ public:
 	void write(const std::string &str, std::size_t offset, std::size_t len);
 	void write(const std::string &str);
 	virtual void close() = 0;
+	virtual bool hasErrors() = 0;
 
 private:
 	ZLOutputStream(const ZLOutputStream&);

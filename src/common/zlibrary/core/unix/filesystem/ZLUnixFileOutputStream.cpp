@@ -63,7 +63,10 @@ void ZLUnixFileOutputStream::close() {
 		::fclose(myFile);
 		myFile = 0;
 		if (!myHasErrors) {
-			rename(myTemporaryName.c_str(), myName.c_str());
+			myHasErrors = ::rename(myTemporaryName.c_str(), myName.c_str()) != 0;
+		}
+		if (myHasErrors) {
+			::remove(myTemporaryName.c_str());
 		}
 	}
 }

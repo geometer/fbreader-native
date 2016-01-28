@@ -33,6 +33,7 @@ public:
 	void write(const char chr);
 	void write(const char *data, std::size_t len);
 	void close();
+	bool hasErrors();
 
 private:
 	std::string myName;
@@ -40,5 +41,9 @@ private:
 	bool myHasErrors;
 	FILE *myFile;
 };
+
+inline bool ZLUnixFileOutputStream::hasErrors() {
+	return myHasErrors;
+}
 
 #endif /* __ZLUNIXFILEOUTPUTSTREAM_H__ */
