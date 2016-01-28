@@ -46,7 +46,7 @@ bool ZLUnixFileOutputStream::open() {
 	return myFile != 0;
 }
 
-void ZLUnixFileOutputStream::write(const char &chr) {
+void ZLUnixFileOutputStream::write(const char chr) {
 	if (::fwrite(&chr, 1, 1, myFile) != 1) {
 		myHasErrors = true;
 	}
