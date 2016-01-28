@@ -41,6 +41,7 @@ JavaClass AndroidUtil::Class_ZLFile("org/geometerplus/zlibrary/core/filesystem/Z
 JavaClass AndroidUtil::Class_FileEncryptionInfo("org/geometerplus/zlibrary/core/drm/FileEncryptionInfo");
 JavaClass AndroidUtil::Class_ZLFileImage("org/geometerplus/zlibrary/core/image/ZLFileImage");
 JavaClass AndroidUtil::Class_ZLTextModel("org/geometerplus/zlibrary/text/model/ZLTextModel");
+JavaClass AndroidUtil::Class_SafeFileHandler("org/fbreader/reader/SafeFileHandler");
 
 JavaClass AndroidUtil::Class_Encoding("org/geometerplus/zlibrary/core/encodings/Encoding");
 JavaClass AndroidUtil::Class_EncodingConverter("org/geometerplus/zlibrary/core/encodings/EncodingConverter");
@@ -107,6 +108,9 @@ shared_ptr<VoidMethod> AndroidUtil::Method_Book_addAuthor;
 shared_ptr<VoidMethod> AndroidUtil::Method_Book_addTag;
 shared_ptr<VoidMethod> AndroidUtil::Method_Book_addUid;
 
+shared_ptr<ObjectField> AndroidUtil::Field_SafeFileHandler_Dir;
+shared_ptr<VoidMethod> AndroidUtil::Method_SafeFileHandler_setContent;
+
 JNIEnv *AndroidUtil::getEnv() {
 	JNIEnv *env;
 	ourJavaVM->GetEnv((void **)&env, JNI_VERSION_1_2);
@@ -170,6 +174,9 @@ bool AndroidUtil::init(JavaVM* jvm) {
 	Method_Book_addAuthor = new VoidMethod(Class_AbstractBook, "addAuthor", "(Ljava/lang/String;Ljava/lang/String;)");
 	Method_Book_addTag = new VoidMethod(Class_AbstractBook, "addTag", "(Ljava/lang/String;)");
 	Method_Book_addUid = new VoidMethod(Class_AbstractBook, "addUid", "(Ljava/lang/String;Ljava/lang/String;)");
+
+	Field_SafeFileHandler_Dir = new ObjectField(Class_SafeFileHandler, "Dir", Class_java_lang_String);
+	Method_SafeFileHandler_setContent = new VoidMethod(Class_SafeFileHandler, "setContent", "(Ljava/lang/String;[B)");
 
 	return true;
 }

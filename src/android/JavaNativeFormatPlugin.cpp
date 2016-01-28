@@ -22,6 +22,8 @@
 #include <ZLFileImage.h>
 #include <FileEncryptionInfo.h>
 
+#include "zlibrary/core/filesystem/ZLAndroidFSManager.h"
+
 #include "../common/fbreader/bookmodel/BookModel.h"
 #include "../common/fbreader/bookmodel/ModelWriter.h"
 #include "../common/fbreader/formats/FormatPlugin.h"
@@ -163,13 +165,17 @@ JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 }
 
 extern "C"
-JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readModelNative(JNIEnv* env, jobject thiz, jobject javaBook, jstring javaCacheDir) {
+JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readModelNative(JNIEnv* env, jobject thiz, jobject javaBook, jobject fileHandler) {
+	ZLAndroidFSManager::setFileHandler(fileHandler);
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return 1;
 	}
 
+	jstring javaCacheDir = (jstring)AndroidUtil::Field_SafeFileHandler_Dir->value(fileHandler);
 	const std::string cacheDir = AndroidUtil::fromJavaString(env, javaCacheDir);
+	env->DeleteLocalRef(javaCacheDir);
 
 	shared_ptr<Book> book = AndroidUtil::bookFromJavaBook(env, javaBook);
 	shared_ptr<BookModel> model = new BookModel(book, cacheDir);
@@ -182,6 +188,8 @@ JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 
 	ModelWriter writer(cacheDir);
 	writer.writeModelInfo(*model);
+
+	ZLAndroidFSManager::setFileHandler(0);
 
 	return 0;
 }
