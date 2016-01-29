@@ -34,7 +34,6 @@
 //std::string ZLibrary::ourCountry;
 std::string ZLibrary::ourZLibraryDirectory;
 
-std::string ZLibrary::ourApplicationName;
 //std::string ZLibrary::ourImageDirectory;
 //std::string ZLibrary::ourApplicationImageDirectory;
 std::string ZLibrary::ourApplicationDirectory;
@@ -84,34 +83,8 @@ void ZLibrary::shutdown() {
 //	ZLConfigManager::deleteInstance();
 }
 
-/*std::string ZLibrary::replaceRegExps(const std::string &pattern) {
-	static const std::string NAME_PATTERN = "%APPLICATION_NAME%";
-	static const std::string LOWERCASENAME_PATTERN = "%application_name%";
-	std::string str = pattern;
-	int index = -1;
-	while ((index = str.find(NAME_PATTERN)) != -1) {
-	  str.erase(index, NAME_PATTERN.length());
-		str.insert(index, ourApplicationName);
-	}
-	while ((index = str.find(LOWERCASENAME_PATTERN)) != -1) {
-	  str.erase(index, LOWERCASENAME_PATTERN.length());
-		str.insert(index, ZLUnicodeUtil::toLower(ourApplicationName));
-	}
-	return str;
-}*/
-
-void ZLibrary::initApplication(const std::string &name) {
-	ourApplicationName = name;
-//	ourImageDirectory = replaceRegExps(IMAGEDIR);
-//	ourApplicationImageDirectory = replaceRegExps(APPIMAGEDIR);
+void ZLibrary::initApplication() {
 	ourApplicationDirectory = ".";//BaseDirectory + FileNameDelimiter + ourApplicationName;
-//	ourApplicationWritableDirectory =
-//#ifdef XMLCONFIGHOMEDIR
-//		XMLCONFIGHOMEDIR + FileNameDelimiter + "." + name;
-//#else
-//		"~" + FileNameDelimiter + "." + name;
-//#endif
-//	ourDefaultFilesPathPrefix = ourApplicationDirectory + FileNameDelimiter + "default" + FileNameDelimiter;
 }
 
 /*std::string ZLibrary::Language() {

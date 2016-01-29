@@ -49,6 +49,7 @@ public:
 
 public:
 	static bool init(int &argc, char **&argv);
+	static void initApplication();
 	static void parseArguments(int &argc, char **&argv);
 //	static ZLPaintContext *createContext();
 //	static void run(ZLApplication *application);
@@ -65,16 +66,9 @@ private:
 
 //	static std::string ourImageDirectory;
 //	static std::string ourApplicationImageDirectory;
-	static std::string ourApplicationName;
 	static std::string ourApplicationDirectory;
 //	static std::string ourApplicationWritableDirectory;
 //	static std::string ourDefaultFilesPathPrefix;
-
-private:
-//	static std::string replaceRegExps(const std::string &pattern);
-
-public:
-	static void initApplication(const std::string &name);
 
 private:
 	ZLibrary();
@@ -83,7 +77,6 @@ friend class ZLApplicationBase;
 };
 
 inline const std::string &ZLibrary::ZLibraryDirectory() { return ourZLibraryDirectory; }
-//inline const std::string &ZLibrary::ApplicationName() { return ourApplicationName; }
 //inline const std::string &ZLibrary::ImageDirectory() { return ourImageDirectory; }
 //inline const std::string &ZLibrary::ApplicationImageDirectory() { return ourApplicationImageDirectory; }
 inline const std::string &ZLibrary::ApplicationDirectory() { return ourApplicationDirectory; }
