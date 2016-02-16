@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 
 #include <ZLInputStream.h>
 #include <ZLXMLReader.h>
@@ -87,9 +88,9 @@ static int specialSymbolNumber(SpecialType type, const std::string &txt) {
 		case ST_NAME:
 			return HtmlEntityCollection::symbolNumber(txt);
 		case ST_DEC:
-			return ::strtol(txt.c_str() + 1, &end, 10);
+			return std::strtol(txt.c_str() + 1, &end, 10);
 		case ST_HEX:
-			return ::strtol(txt.c_str() + 2, &end, 16);
+			return std::strtol(txt.c_str() + 2, &end, 16);
 		default:
 			return 0;
 	}

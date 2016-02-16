@@ -46,7 +46,7 @@ ZLFileInfo ZLUnixFSManager::fileInfo(const std::string &path) const {
 	struct stat fileStat;
 	info.Exists = stat(path.c_str(), &fileStat) == 0;
 	if (info.Exists) {
-		info.Size = fileStat.st_size;
+		info.Size = (std::size_t)fileStat.st_size;
 		info.MTime = fileStat.st_mtime;
 		info.IsDirectory = S_ISDIR(fileStat.st_mode);
 	}
